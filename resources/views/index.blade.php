@@ -1,26 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>B7Gallery</title>
     <link rel="stylesheet" href="./assets/css/style.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Open+Sans:ital@0;1&family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Open+Sans:ital@0;1&family=Oswald:wght@400;700&display=swap"
+        rel="stylesheet">
 
 </head>
+
 <body>
     <header>
         <div class="wrapper">
-            <a  href="/" class="logo">B7<span>Gallery</span></a>
+            <a href="/" class="logo">B7<span>Gallery</span></a>
             <div class="hero-area">
                 <div class="hero-area-left">
                     <h1>Envie agora as suas melhores fotografias.</h1>
-                    <form>
+                    <form method="POST" action="{{ route('upload') }}" enctype="multipart/form-data">
+                        @csrf
                         <div class="input-file-container">
-                            <input type="file" />
+                            <input type="file" name="image" />
                             <img src="./assets/icons/Frame.png" alt="Botão de upload" />
                         </div>
-                        <input type="text" placeholder="Escreva um título para a foto" />
+                        <input type="text" name="title" placeholder="Escreva um título para a foto" />
                         <input type="submit" value="Enviar" />
                     </form>
                 </div>
@@ -147,8 +152,9 @@
     </main>
 
     <footer class="wrapper">
-        <a  href="/" class="logo">B7<span>Gallery</span></a>
+        <a href="/" class="logo">B7<span>Gallery</span></a>
         <p>Powered by B7Web</p>
     </footer>
 </body>
+
 </html>
