@@ -38,7 +38,7 @@
     <main class="gallery-container wrapper">
 
         @foreach ($images as $image)
-            <x-image :url="asset('storage/uploads/' . $image['hashname'])" :title="$image['title']" />
+            <x-image :id="$image->id" :url="asset('storage/uploads/' . $image['hashname'])" :title="$image['title']" />
         @endforeach
 
     </main>
