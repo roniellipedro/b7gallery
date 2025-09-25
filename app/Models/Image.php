@@ -8,6 +8,6 @@ class Image extends Model
 {
     protected $fillable = [
         'title',
-        'url'
+        'hashname'
     ];
 }
