@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Image;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -25,10 +26,16 @@ class GalleryController extends Controller
 
             $title = $request->only('title');
 
-            Image::create([
-                'title' => $title['title'],
-                'hashname' => $hashname
-            ]);
+            $path = "uploads/$hashname";
+
+            try {
+                Image::create([
+                    'title' => $title['title'],
+                    'hashname' => $hashname
+                ]);
+            } catch (Exception $error) {
+                Storage::disk('public')->delete($path);
+            }
         }
 
         return redirect(route('index'));
