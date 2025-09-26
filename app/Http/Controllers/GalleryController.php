@@ -6,6 +6,7 @@ use App\Models\Image;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class GalleryController extends Controller
 {
@@ -17,6 +18,17 @@ class GalleryController extends Controller
 
     public function upload(Request $request)
     {
+        $request->validate([
+            'title' => 'required|string|max:255|min:6',
+            'image' => [
+                'required',
+                'image',
+                'mimes:jpeg,png,jpg,gif',
+                'max:2048',
+                Rule::dimensions()->maxWidth(1000)->maxHeight(1000)
+            ]
+        ]);
+
         if ($request->hasFile('image') && $request->title) {
             $image = $request->file('image');
 
@@ -35,6 +47,9 @@ class GalleryController extends Controller
                 ]);
             } catch (Exception $error) {
                 Storage::disk('public')->delete($path);
+                return redirect()->back()->withErrors([
+                    'error' => 'Erro ao salvar a imagem. Tente novamente.'
+                ]);
             }
         }
 
