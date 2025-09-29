@@ -18,6 +18,29 @@ class GalleryController extends Controller
 
     public function upload(Request $request)
     {
+        $this->validateRequest($request);
+
+        $image = $request->file('image');
+        $hashname = $image->hashName();
+        $title = $request->only('title');
+
+        $path = $this->storeImageInDisk($image, $hashname);
+
+        try {
+            $this->storageImageInDatabase($title['title'], $hashname);
+        } catch (Exception $error) {
+            Storage::disk('public')->delete($path);
+            $imageForDelete = Image::firstWhere('hashname', $hashname)?->delete();
+            return redirect()->back()->withErrors([
+                'error' => 'Erro ao salvar a imagem no banco. Tente novamente.'
+            ]);
+        }
+
+        return redirect(route('index'));
+    }
+
+    private function validateRequest(Request $request)
+    {
         $request->validate([
             'title' => 'required|string|max:255|min:6',
             'image' => [
@@ -28,32 +51,20 @@ class GalleryController extends Controller
                 Rule::dimensions()->maxWidth(1000)->maxHeight(1000)
             ]
         ]);
+    }
 
-        if ($request->hasFile('image') && $request->title) {
-            $image = $request->file('image');
+    private function storeImageInDisk($image, $hashname)
+    {
+        $image->storePublicly('uploads', 'public', $hashname);
+        return "uploads/$hashname";
+    }
 
-            $hashname = $image->hashName();
-
-            $image->storePublicly('uploads', 'public', $hashname);
-
-            $title = $request->only('title');
-
-            $path = "uploads/$hashname";
-
-            try {
-                Image::create([
-                    'title' => $title['title'],
-                    'hashname' => $hashname
-                ]);
-            } catch (Exception $error) {
-                Storage::disk('public')->delete($path);
-                return redirect()->back()->withErrors([
-                    'error' => 'Erro ao salvar a imagem. Tente novamente.'
-                ]);
-            }
-        }
-
-        return redirect(route('index'));
+    private function storageImageInDatabase($title, $hashname)
+    {
+        Image::create([
+            'title' => $title,
+            'hashname' => $hashname
+        ]);
     }
 
     public function delete($id)
@@ -63,8 +74,9 @@ class GalleryController extends Controller
 
         if (Storage::disk('public')->exists($path)) {
             Storage::disk('public')->delete($path);
-            $image->delete();
         }
+
+        $image->delete();
 
         return redirect(route('index'));
     }
