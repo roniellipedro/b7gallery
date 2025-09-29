@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Image;
+use App\Services\ImageService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -10,6 +11,13 @@ use Illuminate\Validation\Rule;
 
 class GalleryController extends Controller
 {
+    protected $imageService;
+
+    public function __construct(ImageService $imageService)
+    {
+        $this->imageService = $imageService;
+    }
+
     public function index()
     {
         $images = Image::all();
@@ -24,10 +32,10 @@ class GalleryController extends Controller
         $hashname = $image->hashName();
         $title = $request->only('title');
 
-        $path = $this->storeImageInDisk($image, $hashname);
+        $path = $this->imageService->storeImageInDisk($image, $hashname);
 
         try {
-            $this->storageImageInDatabase($title['title'], $hashname);
+            $this->imageService->storageImageInDatabase($title['title'], $hashname);
         } catch (Exception $error) {
             Storage::disk('public')->delete($path);
             $imageForDelete = Image::firstWhere('hashname', $hashname)?->delete();
@@ -50,20 +58,6 @@ class GalleryController extends Controller
                 'max:2048',
                 Rule::dimensions()->maxWidth(1000)->maxHeight(1000)
             ]
-        ]);
-    }
-
-    private function storeImageInDisk($image, $hashname)
-    {
-        $image->storePublicly('uploads', 'public', $hashname);
-        return "uploads/$hashname";
-    }
-
-    private function storageImageInDatabase($title, $hashname)
-    {
-        Image::create([
-            'title' => $title,
-            'hashname' => $hashname
         ]);
     }
 
